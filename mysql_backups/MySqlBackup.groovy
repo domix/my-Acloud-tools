@@ -4,6 +4,10 @@ import org.jets3t.service.model.S3Bucket
 import org.jets3t.service.impl.rest.httpclient.RestS3Service
 import org.jets3t.service.model.S3Object
 
+
+
+
+
 @Grab(group='net.java.dev.jets3t', module='jets3t', version='0.7.2')
 class S3Storer {
 	def awsAccessKey
@@ -15,14 +19,15 @@ class S3Storer {
 		
 		def object = new S3Object(new File(file))
 		def bucket = getS3Service().getBucket(bucketName)
-		def fileName = file
 		
 		if(bucket) {
 			println "Storing $file on $bucketName wait a moment please..."
-			file = s3Service.putObject(bucket, object);
-			println "Successfully upload $fileName"
+			def storedFile = s3Service.putObject(bucket, object);
+			println "Successfully upload $file"
+			storedFile
 		} else {
 			println "the bucket $bucketName cant be found."
+			null
 		}
 		
 	}
@@ -41,14 +46,4 @@ class S3Storer {
 		s3Service
 	}
 }
-
-
-
-println 'Performing MySql Backup to Amazon S3'
-
-// You must provide your Amazon S3 credentials
-def storer = new S3Storer(awsAccessKey:'', awsSecretKey:'')
-// The filename and the bucket name
-storer.storeFile('', '')
-
 
