@@ -1,14 +1,11 @@
-
 //Here you can provide the database, password, even the username to perform the backup in gzip
-def sqlDatabasefile = new MySqlBackuper(database:'databaseName', username:'user', password:'yourPassword').doBackup()
+def sqlDatabasefile = new MySqlBackuper(database:'cp1026', password:'').doBackup()
 
 println 'Performing MySql Backup to Amazon S3'
 
-
 def storer = new S3Storer(awsAccessKey:'', awsSecretKey:'')
 // The filename and the bucket name
-def f = storer.storeFile(sqlDatabasefile, 'yourBicketName')
-
+def f = storer.storeFile(sqlDatabasefile, '')
 
 
 class MySqlBackuper {
@@ -23,16 +20,21 @@ class MySqlBackuper {
 		def zipfilename = "${filename}.gz"
 
 		println "Trying Backup, database='$database' with '$user' in file $zipfilename"
-		def command = "mysqldump --opt --user=${user} --password=${password} ${database}"
+		//This is the command to perform the dump via mySql tools
+		def command = "mysqldump --user=${user} --password='${password}' ${database}"
 
 		def dump = command.execute()
 		dump.waitFor()
 
 		new File(sqlfilename).write(dump.text)
 
+		//AntBuilder is awesome, cool to have it in runtime, not only in develoment time
 		def ant = new AntBuilder()
+		//Create the Gzip file
 		ant.gzip zipfile:zipfilename, src:sqlfilename
 		ant.delete file:sqlfilename
+		
+		//return the GZip filename
 		zipfilename
 	}
 }
